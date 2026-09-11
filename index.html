@@ -1,27 +1,27 @@
 <html>
 <head>
-    <script src="https://aframe.io/releases/1.8.0/aframe.min.js"></script>
-    <script src="https://unpkg.com/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
-    <script src="https://unpkg.com/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/n5ro/aframe-physics-system@v4.0.1/dist/aframe-physics-system.min.js"></script>
-  </head>
+  <script src="https://aframe.io/releases/1.8.0/aframe.min.js"></script>
+<script src="https://unpkg.com/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
+<script>
+  delete AFRAME.components["grabbable"];
+</script>
+<script src="https://unpkg.com/super-hands@^3.0.6/dist/super-hands.min.js"></script>
+</head>
   <body>
-    <a-scene shadow="type: pcfsoft" physics="debug: false; gravity: -9.81">
+    <a-scene shadow="type: pcfsoft">
 
       <a-entity light="type: directional; color: #FFF; intensity: 3; castShadow: true" position="-1 3 1"></a-entity>
       <a-entity light="type: ambient; color: #BBB; intensity: 0.6"></a-entity>
 
-      <a-box class="grabbable" grabbable stretchable="usePhysics: true"
+      <a-box class="grabbable" grabbable stretchable fall-with-gravity="groundY: 0.2"
        width="0.4" height="0.4" depth="0.4"
        position="0 0.2 -1" rotation="0 45 0" color="#4CC3D9"
-       shadow="cast: true; receive: true"
-       dynamic-body="shape: box; mass: 1"></a-box>
-      <a-sphere class="grabbable" grabbable stretchable="usePhysics: true"
+       shadow="cast: true; receive: true"></a-box>
+      <a-sphere class="grabbable" grabbable stretchable fall-with-gravity="groundY: 0.3"
           position="2 0.3 -3" radius="0.3" color="#EF2D5E"
-          shadow="cast: true; receive: true"
-          dynamic-body="shape: sphere; mass: 1"></a-sphere>
+          shadow="cast: true; receive: true"></a-sphere>
        <a-sky color="#ECECEC"></a-sky>
-      <a-plane position="0 0 0" rotation="-90 0 0" width="10" height="10" color="#7BC8A4" shadow="receive: true" static-body="shape: box"></a-plane>
+      <a-plane position="0 0 0" rotation="-90 0 0" width="10" height="10" color="#7BC8A4" shadow="receive: true"></a-plane>
 
       <a-entity id="rig">
         <a-entity id="camera" camera position="0 1.6 0" look-controls></a-entity>
@@ -32,6 +32,38 @@
     </a-scene>
 
     <script>
+    AFRAME.registerComponent('fall-with-gravity', {
+  schema: {
+    groundY: { default: 0.2 },  
+    gravity: { default: -9.8 }
+  },
+  init: function () {
+    this.velocityY = 0;
+    this.held = false;
+    
+    this.el.addEventListener('grab-start', () => {
+      this.held = true;
+      this.velocityY = 0;
+    });
+    this.el.addEventListener('grab-end', () => {
+      this.held = false;
+    });
+  },
+  tick: function (time, delta) {
+    if (this.held) return; 
+
+    const dt = delta / 1000;
+    this.velocityY += this.data.gravity * dt;
+
+    const pos = this.el.object3D.position;
+    pos.y += this.velocityY * dt;
+
+    if (pos.y <= this.data.groundY) {
+      pos.y = this.data.groundY;
+      this.velocityY = 0; 
+    }
+  }
+});
     AFRAME.registerComponent('turn-controls', {
       schema: { speed: {default: 60} },
       init: function () {
