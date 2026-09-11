@@ -1,222 +1,1192 @@
-<html>
+<!DOCTYPE html>
+<html lang="fr">
 <head>
-    <script src="https://aframe.io/releases/1.8.0/aframe.min.js"></script>
-    <script src="https://unpkg.com/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
-    <script>
-      delete AFRAME.components["grabbable"];
-    </script>
-    <script src="https://unpkg.com/super-hands@^3.0.6/dist/super-hands.min.js"></script>
-  </head>
-  <body>
-    <a-scene shadow="type: pcfsoft">
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-      <a-entity light="type: directional; color: #FFF; intensity: 3; castShadow: true" position="-1 3 1"></a-entity>
-      <a-entity light="type: ambient; color: #BBB; intensity: 0.6"></a-entity>
+  <title>VR - Grab, Movement & Weapon</title>
 
-      <a-box class="grabbable" grabbable stretchable fall-with-gravity="groundY: 0.2"
-             width="0.4" height="0.4" depth="0.4"
-             position="0 0.2 -1" rotation="0 45 0" color="#4CC3D9"
-             shadow="cast: true; receive: true"></a-box>
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
 
-      <a-sphere class="grabbable" grabbable stretchable fall-with-gravity="groundY: 0.3"
-                position="2 0.3 -3" radius="0.3" color="#EF2D5E"
-                shadow="cast: true; receive: true"></a-sphere>
 
-         <a-entity id="gun" class="grabbable" grabbable stretchable
-          shootable="speed: 15; gravity: -9.8; projectileRadius: 0.05; color: #FFD700"
-          position="-1 1 -1" rotation="0 90 0">
-  
-        <a-box width="0.08" height="0.08" depth="0.25" color="#333"
-         shadow="cast: true"></a-box>
-  
-        <a-box width="0.04" height="0.04" depth="0.3" color="#555"
-         position="0 0.02 -0.25" shadow="cast: true"></a-box>
-        </a-entity>
-      <a-sky color="#ECECEC"></a-sky>
+</head>
 
-      <a-plane position="0 0 0" rotation="-90 0 0" width="10" height="10" color="#7BC8A4"
-               shadow="receive: true"></a-plane>
 
-      <a-entity id="rig">
-        <a-entity id="camera" camera position="0 1.6 0" look-controls></a-entity>
+<body>
+<a-scene
+  background="color: #111111"
+  renderer="antialias: true; shadowMap: true"
+  vr-mode-ui="enabled: true"
+  physics-world="gravity: -9.81; floorHalfExtent: 10; killY: -20"
+>
 
-        <a-entity id="leftHand"
-           oculus-touch-controls="hand: left" super-hands="grabStartButtons: triggerdown; grabEndButtons: triggerup"
-           sphere-collider="objects: .grabbable"
-           move-controls></a-entity>
+  <!--
+  <a-assets>
+    <a-asset-item id="gunModel" src="models/gun.glb"></a-asset-item>
+  </a-assets>
+  -->
 
-        <a-entity id="rightHand"
-           oculus-touch-controls="hand: right" super-hands="grabStartButtons: triggerdown; grabEndButtons: triggerup"
-           sphere-collider="objects: .grabbable"
-           turn-controls></a-entity>
-      </a-entity>
+  <a-entity light="type: ambient; intensity: 0.7"></a-entity>
+  <a-entity light="type: directional; intensity: 1; castShadow: true" position="-2 5 3"></a-entity>
 
-    </a-scene>
+  <a-plane
+    position="0 0 0"
+    rotation="-90 0 0"
+    width="10"
+    height="10"
+    color="#EF2D5E"
+    shadow="receive: true">
+  </a-plane>
 
-    <script>
-    AFRAME.registerComponent('fall-with-gravity', {
+  <a-entity id="rig" position="0 0 2">
+
+    <a-camera
+      id="camera"
+      position="0 1.6 0"
+      look-controls="enabled: true">
+    </a-camera>
+
+    <a-entity
+      id="leftHand"
+      meta-touch-controls="hand: left; model: true"
+      laser-controls="hand: left"
+      raycaster="objects: .grabbable, .gun-grabbable; far: 10; interval: 0"
+      laser-cursor="color: #00FFFF"
+      laser-grab="rig: #rig"
+      gun-grab="gripOffsetRotation: -30 0 0"
+      left-thumbstick-move="rig: #rig; speed: 2.0; invertForward: false"
+      controller-debug
+      line="color: #00FFFF; opacity: 0.8"
+    >
+    </a-entity>
+
+    <a-entity
+      id="rightHand"
+      meta-touch-controls="hand: right; model: true"
+      laser-controls="hand: right"
+      raycaster="objects: .grabbable, .gun-grabbable; far: 10; interval: 0"
+      laser-cursor="color: #00FFFF"
+      laser-grab="rig: #rig"
+      gun-grab="gripOffsetRotation: -30 0 0"
+      joystick-turn="speed: 1.8"
+      controller-debug
+      line="color: #00FFFF; opacity: 0.8"
+    >
+    </a-entity>
+
+  </a-entity>
+
+  <a-box
+    id="box"
+    class="grabbable"
+    position="0 0.2 -1"
+    width="1"
+    height="1"
+    depth="1"
+    color="#4CC3D9"
+    shadow="cast: true; receive: true"
+    physics-body="shape: box; width: 1; height: 1; depth: 1; restitution: 0.1; friction: 0.4"
+  >
+  </a-box>
+
+  <a-sphere
+    id="sphere"
+    class="grabbable"
+    position="2 0.3 -3"
+    radius="0.3"
+    color="#EF2D5E"
+    shadow="cast: true; receive: true"
+    physics-body="shape: sphere; radius: 1; restitution: 0.4; friction: 0.2"
+  >
+  </a-sphere>
+
+  <a-entity
+    id="gun"
+    class="gun-grabbable"
+    position="0.3 1 -1.2"
+    rotation="0 200 0"
+    geometry="primitive: box; width: 0.22; height: 0.26; depth: 0.42"
+    material="opacity: 0; transparent: true"
+    physics-body="shape: box; width: 0.08; height: 0.16; depth: 0.32; restitution: 0.1; friction: 0.5"
+  >
+    <a-box class="gun-part" width="0.06" height="0.10" depth="0.22"
+           color="#333333" position="0 0.02 0"></a-box>
+
+    <a-box class="gun-part" width="0.05" height="0.14" depth="0.06"
+           color="#222222" position="0 -0.09 0.06" rotation="18 0 0"></a-box>
+
+    <a-cylinder class="gun-part" radius="0.016" height="0.16"
+                color="#111111" position="0 0.02 -0.19" rotation="90 0 0"></a-cylinder>
+
+    <a-box class="gun-part" width="0.035" height="0.03" depth="0.05"
+           color="#555555" position="0 0.09 0.05"></a-box>
+
+    <a-entity class="muzzle" position="0 0.02 -0.28"></a-entity>
+  </a-entity>
+
+  <a-sky color="#ECECEC"></a-sky>
+</a-scene>
+  <script>
+    // =========================================================
+    // SYSTEME PHYSIQUE MAISON
+    // =========================================================
+    AFRAME.registerSystem('physics-world', {
+
       schema: {
-        groundY: { default: 0.2 },
-        gravity: { default: -9.8 }
+        gravity: { type: 'number', default: -9.81 },
+        floorHalfExtent: { type: 'number', default: 10 },
+        killY: { type: 'number', default: -20 }
       },
+
       init: function () {
-        this.velocityY = 0;
-        this.held = false;
-        this.el.addEventListener('grab-start', () => {
-          this.held = true;
-          this.velocityY = 0;
-        });
-        this.el.addEventListener('grab-end', () => {
-          this.held = false;
-        });
+        this.bodies = [];
       },
+
+      registerBody: function (component) {
+        this.bodies.push(component);
+      },
+
+      unregisterBody: function (component) {
+        const index = this.bodies.indexOf(component);
+        if (index !== -1) this.bodies.splice(index, 1);
+      },
+
       tick: function (time, delta) {
-        if (this.held) return;
 
-        const dt = delta / 1000;
-        this.velocityY += this.data.gravity * dt;
+        if (!delta) return;
 
-        const pos = this.el.object3D.position;
-        pos.y += this.velocityY * dt;
+        const dt = Math.min(delta / 1000, 0.05);
+        const subSteps = 4;
+        const subDt = dt / subSteps;
 
-        if (pos.y <= this.data.groundY) {
-          pos.y = this.data.groundY;
-          this.velocityY = 0;
+        const DOWN = new THREE.Vector3(0, -1, 0);
+        const UP = new THREE.Vector3(0, 1, 0);
+
+        const LINEAR_SLEEP_EPS = 0.03;
+        const ANGULAR_SLEEP_EPS = 0.12;
+        const SLEEP_DELAY = 0.25;
+
+        const floorHalfExtent = this.data.floorHalfExtent;
+
+        for (let s = 0; s < subSteps; s++) {
+
+          for (let i = 0; i < this.bodies.length; i++) {
+            const body = this.bodies[i];
+            if (body.kinematic) continue;
+
+            const pos = body.el.object3D.position;
+            const quat = body.el.object3D.quaternion;
+
+            if (body.justThrownTimer > 0) {
+              body.justThrownTimer = Math.max(0, body.justThrownTimer - subDt);
+            }
+
+            body.velocity.y += this.data.gravity * subDt;
+
+            pos.x += body.velocity.x * subDt;
+            pos.y += body.velocity.y * subDt;
+            pos.z += body.velocity.z * subDt;
+
+            const angSpeed = body.angularVelocity.length();
+            if (angSpeed > 0.0001) {
+              const axis = body.angularVelocity.clone().normalize();
+              const deltaQuat = new THREE.Quaternion().setFromAxisAngle(axis, angSpeed * subDt);
+              quat.premultiply(deltaQuat);
+            }
+
+            const withinFloorBounds =
+              Math.abs(pos.x) <= floorHalfExtent &&
+              Math.abs(pos.z) <= floorHalfExtent;
+
+            if (withinFloorBounds) {
+
+              const contactLocal = body.getSupportPointLocal(DOWN);
+              const r = contactLocal.clone().applyQuaternion(quat);
+              const contactWorldY = pos.y + r.y;
+
+              if (contactWorldY < 0) {
+
+                pos.y -= contactWorldY;
+
+                const pointVelocity = body.velocity.clone().add(
+                  body.angularVelocity.clone().cross(r)
+                );
+
+                const vAlongNormal = pointVelocity.dot(UP);
+
+                if (vAlongNormal < 0) {
+
+                  const invMass = 1;
+                  const invInertia = 1 / body.inertia;
+
+                  const rxn = r.clone().cross(UP);
+                  const denom = invMass + invInertia * rxn.dot(rxn);
+
+                  const j = -(1 + body.data.restitution) * vAlongNormal / denom;
+                  const impulse = UP.clone().multiplyScalar(j);
+
+                  body.velocity.add(impulse.clone().multiplyScalar(invMass));
+                  body.angularVelocity.add(
+                    r.clone().cross(impulse).multiplyScalar(invInertia)
+                  );
+
+                  if (body.justThrownTimer <= 0) {
+
+                    const tangentVel = pointVelocity.clone().sub(UP.clone().multiplyScalar(vAlongNormal));
+                    const tangentSpeed = tangentVel.length();
+
+                    if (tangentSpeed > 0.0001) {
+                      const tangentDir = tangentVel.clone().divideScalar(tangentSpeed);
+                      const maxFriction = body.data.friction * Math.abs(j);
+                      const frictionMag = Math.min(tangentSpeed * invMass, maxFriction);
+                      const frictionImpulse = tangentDir.multiplyScalar(-frictionMag);
+
+                      body.velocity.add(frictionImpulse.clone().multiplyScalar(invMass));
+                      body.angularVelocity.add(
+                        r.clone().cross(frictionImpulse).multiplyScalar(invInertia)
+                      );
+                    }
+                  }
+                }
+
+                body.angularVelocity.multiplyScalar(0.9);
+
+                if (
+                  body.velocity.length() < LINEAR_SLEEP_EPS &&
+                  body.angularVelocity.length() < ANGULAR_SLEEP_EPS
+                ) {
+                  body.restTime += subDt;
+                  if (body.restTime > SLEEP_DELAY) {
+                    body.velocity.set(0, 0, 0);
+                    body.angularVelocity.set(0, 0, 0);
+                  }
+                } else {
+                  body.restTime = 0;
+                }
+              }
+            }
+
+            body.velocity.multiplyScalar(0.999);
+            body.angularVelocity.multiplyScalar(0.995);
+          }
+
+          for (let i = 0; i < this.bodies.length; i++) {
+            for (let j = i + 1; j < this.bodies.length; j++) {
+
+              const a = this.bodies[i];
+              const b = this.bodies[j];
+
+              if (a.kinematic && b.kinematic) continue;
+
+              const posA = a.el.object3D.position;
+              const posB = b.el.object3D.position;
+
+              const delta = new THREE.Vector3().subVectors(posB, posA);
+              const dist = delta.length();
+
+              if (dist < 0.0001) continue;
+
+              const dir = delta.clone().divideScalar(dist);
+
+              const extentA = a.getExtentAlongDirection(dir);
+              const extentB = b.getExtentAlongDirection(dir.clone().negate());
+              const minDist = extentA + extentB;
+
+              if (dist < minDist) {
+
+                const overlap = minDist - dist;
+                const normal = dir;
+
+                if (a.kinematic) {
+                  posB.add(normal.clone().multiplyScalar(overlap));
+                  const vAlongNormal = b.velocity.dot(normal);
+                  if (vAlongNormal < 0) {
+                    b.velocity.sub(normal.clone().multiplyScalar(vAlongNormal));
+                  }
+                } else if (b.kinematic) {
+                  posA.sub(normal.clone().multiplyScalar(overlap));
+                  const vAlongNormal = a.velocity.dot(normal.clone().negate());
+                  if (vAlongNormal < 0) {
+                    a.velocity.add(normal.clone().multiplyScalar(vAlongNormal));
+                  }
+                } else {
+                  posA.sub(normal.clone().multiplyScalar(overlap / 2));
+                  posB.add(normal.clone().multiplyScalar(overlap / 2));
+
+                  const relVel = new THREE.Vector3().subVectors(b.velocity, a.velocity);
+                  const sepVel = relVel.dot(normal);
+
+                  if (sepVel < 0) {
+                    const restitution = Math.min(a.data.restitution, b.data.restitution);
+                    const impulse = normal.clone().multiplyScalar(-sepVel * (1 + restitution) / 2);
+                    a.velocity.sub(impulse);
+                    b.velocity.add(impulse);
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // Sécurité "kill plane" : uniquement pour les objets qui ont
+        // un vrai sens à "revenir" (box/sphère/cylindre/arme). Les
+        // balles (noRespawn: true) ne reviennent jamais, elles
+        // continuent de tomber puis sont supprimées par leur timeout.
+        for (let i = 0; i < this.bodies.length; i++) {
+          const body = this.bodies[i];
+          if (body.kinematic) continue;
+          if (body.data.noRespawn) continue;
+
+          if (body.el.object3D.position.y < this.data.killY) {
+            body.el.object3D.position.copy(body.spawnPosition);
+            body.el.object3D.quaternion.copy(body.spawnQuaternion);
+            body.velocity.set(0, 0, 0);
+            body.angularVelocity.set(0, 0, 0);
+            body.restTime = 0;
+            body.justThrownTimer = 0;
+          }
         }
       }
+
     });
 
-    AFRAME.registerComponent('shootable', {
-  schema: {
-    speed: { default: 15 },
-    gravity: { default: -9.8 },
-    projectileRadius: { default: 0.05 },
-    color: { default: '#FFD700' }
-  },
-  init: function () {
-    this.currentHand = null;
-    this.onTriggerDown = this.onTriggerDown.bind(this);
-    this.el.addEventListener('grab-start', (evt) => {
-      this.currentHand = evt.detail && evt.detail.hand;
-      if (this.currentHand) {
-        this.currentHand.addEventListener('triggerdown', this.onTriggerDown);
-      }
-    });
+    AFRAME.registerComponent('physics-body', {
 
-    
-    this.el.addEventListener('grab-end', () => {
-      if (this.currentHand) {
-        this.currentHand.removeEventListener('triggerdown', this.onTriggerDown);
-      }
-      this.currentHand = null;
-    });
-  },
-  onTriggerDown: function () {
-    this.shoot();
-  },
-  shoot: function () {
-    const gunObj = this.el.object3D;
+      schema: {
+        shape: { type: 'string', default: 'box' },
 
-    const muzzleWorld = new THREE.Vector3(0, 0.02, -0.4);
-    gunObj.localToWorld(muzzleWorld);
+        width: { type: 'number', default: 1 },
+        height: { type: 'number', default: 1 },
+        depth: { type: 'number', default: 1 },
 
-    const worldQuat = new THREE.Quaternion();
-    gunObj.getWorldQuaternion(worldQuat);
-    const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(worldQuat).normalize();
+        radius: { type: 'number', default: 0.5 },
 
-    const projectile = document.createElement('a-sphere');
-    projectile.setAttribute('radius', this.data.projectileRadius);
-    projectile.setAttribute('color', this.data.color);
-    projectile.setAttribute('shadow', 'cast: true');
-    projectile.setAttribute('position', `${muzzleWorld.x} ${muzzleWorld.y} ${muzzleWorld.z}`);
-    projectile.setAttribute('projectile-motion',
-      `speed: ${this.data.speed}; gravity: ${this.data.gravity}; dirX: ${direction.x}; dirY: ${direction.y}; dirZ: ${direction.z}`);
+        restitution: { type: 'number', default: 0.15 },
+        friction: { type: 'number', default: 0.35 },
 
-    this.el.sceneEl.appendChild(projectile);
-
-    setTimeout(() => {
-      if (projectile.parentNode) projectile.parentNode.removeChild(projectile);
-    }, 5000);
-  }
-});
-
-AFRAME.registerComponent('projectile-motion', {
-  schema: {
-    speed: { default: 15 },
-    gravity: { default: -9.8 },
-    dirX: { default: 0 },
-    dirY: { default: 0 },
-    dirZ: { default: -1 }
-  },
-  init: function () {
-    this.velocity = new THREE.Vector3(this.data.dirX, this.data.dirY, this.data.dirZ)
-      .normalize()
-      .multiplyScalar(this.data.speed);
-  },
-  tick: function (time, delta) {
-    const dt = delta / 1000;
-    this.velocity.y += this.data.gravity * dt;
-
-    const pos = this.el.object3D.position;
-    pos.x += this.velocity.x * dt;
-    pos.y += this.velocity.y * dt;
-    pos.z += this.velocity.z * dt;
-
-    if (pos.y <= 0) {
-      if (this.el.parentNode) this.el.parentNode.removeChild(this.el);
-    }
-  }
-});
-
-    AFRAME.registerComponent('turn-controls', {
-      schema: { speed: {default: 60} },
-      init: function () {
-        this.rig = this.el.closest('[movement-controls]') || this.el.parentEl;
-        this.turnX = 0;
-        this.el.addEventListener('axismove', (evt) => {
-          const x = evt.detail.axis[2] !== undefined ? evt.detail.axis[2] : evt.detail.axis[0];
-          this.turnX = x;
-        });
+        // Les balles n'ont pas besoin (et ne doivent pas) revenir à
+        // un "point de spawn" après être tombées du bord du sol.
+        noRespawn: { type: 'boolean', default: false }
       },
-      tick: function (time, delta) {
-        if (!this.turnX || Math.abs(this.turnX) < 0.15) return;
-        const rig = this.rig;
-        const rotation = rig.getAttribute('rotation');
-        rotation.y -= this.turnX * this.data.speed * (delta / 1000);
-        rig.setAttribute('rotation', rotation);
+
+      init: function () {
+        this.velocity = new THREE.Vector3(0, 0, 0);
+        this.angularVelocity = new THREE.Vector3(0, 0, 0);
+        this.kinematic = false;
+
+        this.justThrownTimer = 0;
+        this.restTime = 0;
+
+        this.spawnPosition = this.el.object3D.position.clone();
+        this.spawnQuaternion = this.el.object3D.quaternion.clone();
+
+        this._invQuat = new THREE.Quaternion();
+        this._dirLocal = new THREE.Vector3();
+
+        this.inertia = this.computeInertia();
+
+        this.system = this.el.sceneEl.systems['physics-world'];
+        this.system.registerBody(this);
+      },
+
+      computeInertia: function () {
+
+        const data = this.data;
+        let inertia;
+
+        if (data.shape === 'sphere') {
+          inertia = 0.4 * data.radius * data.radius;
+        } else if (data.shape === 'cylinder') {
+          const ixx = (3 * data.radius * data.radius + data.height * data.height) / 12;
+          const iyy = (data.radius * data.radius) / 2;
+          inertia = (2 * ixx + iyy) / 3;
+        } else {
+          const w = data.width, h = data.height, d = data.depth;
+          const ixx = (h * h + d * d) / 12;
+          const iyy = (w * w + d * d) / 12;
+          const izz = (w * w + h * h) / 12;
+          inertia = (ixx + iyy + izz) / 3;
+        }
+
+        return Math.max(inertia, 0.02);
+      },
+
+      getExtentAlongDirection: function (dirWorld) {
+
+        const data = this.data;
+
+        if (data.shape === 'sphere') {
+          return data.radius;
+        }
+
+        this._invQuat.copy(this.el.object3D.quaternion).invert();
+        this._dirLocal.copy(dirWorld).applyQuaternion(this._invQuat);
+
+        if (data.shape === 'box') {
+          const hx = data.width / 2;
+          const hy = data.height / 2;
+          const hz = data.depth / 2;
+
+          return (
+            Math.abs(this._dirLocal.x) * hx +
+            Math.abs(this._dirLocal.y) * hy +
+            Math.abs(this._dirLocal.z) * hz
+          );
+        }
+
+        if (data.shape === 'cylinder') {
+          const hh = data.height / 2;
+          const r = data.radius;
+
+          const axisComponent = this._dirLocal.y;
+          const radialComponent = Math.sqrt(Math.max(0, 1 - axisComponent * axisComponent));
+
+          return hh * Math.abs(axisComponent) + r * radialComponent;
+        }
+
+        return data.radius;
+      },
+
+      getSupportPointLocal: function (dirWorld) {
+
+        const data = this.data;
+
+        this._invQuat.copy(this.el.object3D.quaternion).invert();
+        const dirLocal = dirWorld.clone().applyQuaternion(this._invQuat);
+
+        if (data.shape === 'sphere') {
+          return dirLocal.multiplyScalar(data.radius);
+        }
+
+        if (data.shape === 'box') {
+          const hx = data.width / 2;
+          const hy = data.height / 2;
+          const hz = data.depth / 2;
+
+          return new THREE.Vector3(
+            Math.sign(dirLocal.x) * hx,
+            Math.sign(dirLocal.y) * hy,
+            Math.sign(dirLocal.z) * hz
+          );
+        }
+
+        if (data.shape === 'cylinder') {
+          const extent = this.getExtentAlongDirection(dirWorld);
+          return dirLocal.multiplyScalar(extent);
+        }
+
+        return dirLocal.multiplyScalar(data.radius);
+      },
+
+      remove: function () {
+        this.system.unregisterBody(this);
       }
+
     });
 
-    AFRAME.registerComponent('move-controls', {
-      schema: { speed: { default: 2 } },
+
+    // =========================================================
+    // Mouvement avec le joystick gauche
+    // =========================================================
+    AFRAME.registerComponent('left-thumbstick-move', {
+
+      schema: {
+        rig: { type: 'selector' },
+        speed: { type: 'number', default: 2.0 },
+        invertForward: { type: 'boolean', default: false }
+      },
+
       init: function () {
-        this.rig = this.el.closest('#rig') || document.querySelector('#rig');
-        this.camera = document.querySelector('#camera');
         this.axisX = 0;
         this.axisY = 0;
-        this.el.addEventListener('axismove', (evt) => {
-          this.axisX = evt.detail.axis[2] !== undefined ? evt.detail.axis[2] : evt.detail.axis[0];
-          this.axisY = evt.detail.axis[3] !== undefined ? evt.detail.axis[3] : evt.detail.axis[1];
-        });
+        this.onThumbstick = this.onThumbstick.bind(this);
+        this.el.addEventListener('thumbstickmoved', this.onThumbstick);
       },
+
+      onThumbstick: function (event) {
+        this.axisX = event.detail.x || 0;
+        this.axisY = event.detail.y || 0;
+      },
+
       tick: function (time, delta) {
-        if (Math.abs(this.axisX) < 0.15 && Math.abs(this.axisY) < 0.15) return;
+
+        if (!this.data.rig) return;
+        if (!delta) return;
+
+        const x = this.axisX;
+
+        let z = this.axisY;
+        if (this.data.invertForward) z = -z;
+
+        if (Math.abs(x) < 0.05 && Math.abs(z) < 0.05) return;
 
         const dt = delta / 1000;
-        const camRotation = this.camera.object3D.rotation;
+        const direction = new THREE.Vector3(x, 0, z);
 
-        const forward = new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(0, camRotation.y, 0));
-        const right = new THREE.Vector3(1, 0, 0).applyEuler(new THREE.Euler(0, camRotation.y, 0));
+        direction.applyAxisAngle(
+          new THREE.Vector3(0, 1, 0),
+          this.data.rig.object3D.rotation.y
+        );
 
-        const move = new THREE.Vector3();
-        move.addScaledVector(forward, -this.axisY * this.data.speed * dt);
-        move.addScaledVector(right, this.axisX * this.data.speed * dt);
-
-        const pos = this.rig.object3D.position;
-        pos.x += move.x;
-        pos.z += move.z;
+        this.data.rig.object3D.position.x += direction.x * this.data.speed * dt;
+        this.data.rig.object3D.position.z += direction.z * this.data.speed * dt;
       }
+
     });
-    </script>
-  </body>
+
+
+    // =========================================================
+    // Rotation avec le joystick droit
+    // =========================================================
+    AFRAME.registerComponent('joystick-turn', {
+
+      schema: {
+        speed: { type: 'number', default: 1.8 }
+      },
+
+      init: function () {
+        this.axisX = 0;
+        this.el.addEventListener('thumbstickmoved', (event) => {
+          this.axisX = event.detail.x || 0;
+        });
+      },
+
+      tick: function (time, delta) {
+
+        if (!delta) return;
+        if (Math.abs(this.axisX) < 0.1) return;
+
+        const dt = delta / 1000;
+        this.el.parentEl.object3D.rotation.y -= this.axisX * this.data.speed * dt;
+      }
+
+    });
+
+
+    // =========================================================
+    // Curseur visuel pour le laser
+    // =========================================================
+    AFRAME.registerComponent('laser-cursor', {
+
+      schema: {
+        color: { type: 'color', default: '#00FFFF' }
+      },
+
+      init: function () {
+
+        this.cursor = document.createElement('a-sphere');
+        this.cursor.setAttribute('radius', '0.018');
+        this.cursor.setAttribute('color', this.data.color);
+        this.cursor.setAttribute('visible', 'false');
+        this.cursor.setAttribute('material', 'shader: flat; opacity: 0.95');
+        this.el.sceneEl.appendChild(this.cursor);
+
+        this.onIntersection = this.onIntersection.bind(this);
+        this.onClear = this.onClear.bind(this);
+
+        this.el.addEventListener('raycaster-intersection', this.onIntersection);
+        this.el.addEventListener('raycaster-intersection-cleared', this.onClear);
+      },
+
+      isPickable: function (el) {
+        return el.classList.contains('grabbable') || el.classList.contains('gun-grabbable');
+      },
+
+      onIntersection: function (event) {
+
+        const raycaster = this.el.components.raycaster;
+        if (!raycaster) return;
+
+        const intersections = raycaster.intersections;
+        if (!intersections || intersections.length === 0) return;
+
+        const hit = intersections[0];
+        if (!hit || !hit.point) return;
+        if (!hit.object || !hit.object.el) return;
+
+        let target = hit.object.el;
+
+        while (target && !this.isPickable(target) && target.parentEl) {
+          target = target.parentEl;
+        }
+
+        if (!target || !this.isPickable(target)) {
+          this.cursor.setAttribute('visible', 'false');
+          return;
+        }
+
+        this.cursor.object3D.position.copy(hit.point);
+        this.cursor.setAttribute('visible', 'true');
+      },
+
+      onClear: function () {
+        this.cursor.setAttribute('visible', 'false');
+      },
+
+      remove: function () {
+        if (this.cursor) this.cursor.remove();
+        this.el.removeEventListener('raycaster-intersection', this.onIntersection);
+        this.el.removeEventListener('raycaster-intersection-cleared', this.onClear);
+      }
+
+    });
+
+
+    // =========================================================
+    // Grab générique (box/sphère/cylindre) avec le laser + trigger
+    // =========================================================
+    AFRAME.registerComponent('laser-grab', {
+
+      schema: {
+        rig: { type: 'selector' }
+      },
+
+      init: function () {
+
+        this.grabbed = null;
+
+        this.localPosition = new THREE.Vector3();
+        this.localQuaternion = new THREE.Quaternion();
+        this.controllerPosition = new THREE.Vector3();
+        this.controllerQuaternion = new THREE.Quaternion();
+        this.tempPosition = new THREE.Vector3();
+        this.tempQuaternion = new THREE.Quaternion();
+
+        this.prevControllerPosition = new THREE.Vector3();
+        this.hasPrevPosition = false;
+        this.velocityHistory = [];
+
+        this.prevControllerQuaternion = new THREE.Quaternion();
+        this.hasPrevQuaternion = false;
+        this.angularVelocityHistory = [];
+
+        this.el.addEventListener('triggerdown', () => this.startGrab());
+        this.el.addEventListener('triggerup', () => this.endGrab());
+      },
+
+      startGrab: function () {
+
+        const gunGrab = this.el.components['gun-grab'];
+        if (gunGrab && gunGrab.heldGun) {
+          return;
+        }
+
+        console.log('TRIGGER DOWN');
+
+        const raycaster = this.el.components.raycaster;
+        if (!raycaster) {
+          console.warn('Raycaster absent');
+          return;
+        }
+
+        const intersections = raycaster.intersections;
+        if (!intersections || intersections.length === 0) {
+          console.log('Trigger pressé mais aucun objet');
+          return;
+        }
+
+        let target = null;
+
+        for (let i = 0; i < intersections.length; i++) {
+          let candidate = intersections[i].object && intersections[i].object.el;
+
+          while (candidate && !candidate.classList.contains('grabbable') && candidate.parentEl) {
+            candidate = candidate.parentEl;
+          }
+
+          if (candidate && candidate.classList.contains('grabbable')) {
+            target = candidate;
+            break;
+          }
+        }
+
+        if (!target) {
+          console.log('Aucun objet grabbable');
+          return;
+        }
+
+        console.log('GRAB:', target.id);
+
+        this.grabbed = target;
+
+        this.el.object3D.getWorldPosition(this.controllerPosition);
+        this.el.object3D.getWorldQuaternion(this.controllerQuaternion);
+
+        const objectWorldPosition = new THREE.Vector3();
+        const objectWorldQuaternion = new THREE.Quaternion();
+
+        target.object3D.getWorldPosition(objectWorldPosition);
+        target.object3D.getWorldQuaternion(objectWorldQuaternion);
+
+        this.localPosition
+          .copy(objectWorldPosition)
+          .sub(this.controllerPosition)
+          .applyQuaternion(this.controllerQuaternion.clone().invert());
+
+        this.localQuaternion
+          .copy(this.controllerQuaternion)
+          .invert()
+          .multiply(objectWorldQuaternion);
+
+        const body = target.components['physics-body'];
+        if (body) {
+          body.kinematic = true;
+          body.velocity.set(0, 0, 0);
+          body.angularVelocity.set(0, 0, 0);
+        }
+
+        this.velocityHistory = [];
+        this.hasPrevPosition = false;
+
+        this.angularVelocityHistory = [];
+        this.hasPrevQuaternion = false;
+
+        target.classList.add('grabbed');
+        target.emit('grab-start');
+      },
+
+      endGrab: function () {
+
+        if (!this.grabbed) return;
+
+        console.log('TRIGGER UP');
+
+        const object = this.grabbed;
+
+        const throwVelocity = new THREE.Vector3();
+        if (this.velocityHistory.length > 0) {
+          this.velocityHistory.forEach((v) => throwVelocity.add(v));
+          throwVelocity.divideScalar(this.velocityHistory.length);
+        }
+
+        const throwAngularVelocity = new THREE.Vector3();
+        if (this.angularVelocityHistory.length > 0) {
+          this.angularVelocityHistory.forEach((v) => throwAngularVelocity.add(v));
+          throwAngularVelocity.divideScalar(this.angularVelocityHistory.length);
+        }
+
+        const body = object.components['physics-body'];
+        if (body) {
+          body.kinematic = false;
+          body.velocity.copy(throwVelocity);
+          body.angularVelocity.copy(throwAngularVelocity);
+          body.justThrownTimer = 0.15;
+          body.restTime = 0;
+        }
+
+        object.classList.remove('grabbed');
+        object.emit('grab-end');
+
+        this.grabbed = null;
+      },
+
+      tick: function (time, delta) {
+
+        if (!this.grabbed) return;
+        if (!delta) return;
+
+        const object = this.grabbed.object3D;
+
+        this.el.object3D.getWorldPosition(this.controllerPosition);
+        this.el.object3D.getWorldQuaternion(this.controllerQuaternion);
+
+        const dt = delta / 1000;
+
+        if (this.hasPrevPosition && dt > 0) {
+          const instantVelocity = new THREE.Vector3()
+            .subVectors(this.controllerPosition, this.prevControllerPosition)
+            .divideScalar(dt);
+
+          this.velocityHistory.push(instantVelocity);
+          if (this.velocityHistory.length > 5) this.velocityHistory.shift();
+        }
+        this.prevControllerPosition.copy(this.controllerPosition);
+        this.hasPrevPosition = true;
+
+        if (this.hasPrevQuaternion && dt > 0) {
+
+          const deltaQuat = this.controllerQuaternion.clone()
+            .multiply(this.prevControllerQuaternion.clone().invert());
+
+          const w = THREE.MathUtils.clamp(deltaQuat.w, -1, 1);
+          let angle = 2 * Math.acos(w);
+          if (angle > Math.PI) angle -= 2 * Math.PI;
+
+          const sinHalf = Math.sqrt(Math.max(0, 1 - w * w));
+          const axis = new THREE.Vector3(deltaQuat.x, deltaQuat.y, deltaQuat.z);
+
+          if (sinHalf > 0.0001) {
+            axis.divideScalar(sinHalf);
+            const instantAngular = axis.multiplyScalar(angle / dt);
+            this.angularVelocityHistory.push(instantAngular);
+            if (this.angularVelocityHistory.length > 5) this.angularVelocityHistory.shift();
+          }
+        }
+        this.prevControllerQuaternion.copy(this.controllerQuaternion);
+        this.hasPrevQuaternion = true;
+
+        this.tempPosition
+          .copy(this.localPosition)
+          .applyQuaternion(this.controllerQuaternion)
+          .add(this.controllerPosition);
+
+        this.tempQuaternion
+          .copy(this.controllerQuaternion)
+          .multiply(this.localQuaternion);
+
+        if (object.parent) {
+
+          const parentWorldPosition = new THREE.Vector3();
+          const parentWorldQuaternion = new THREE.Quaternion();
+
+          object.parent.getWorldPosition(parentWorldPosition);
+          object.parent.getWorldQuaternion(parentWorldQuaternion);
+
+          object.position
+            .copy(this.tempPosition)
+            .sub(parentWorldPosition)
+            .applyQuaternion(parentWorldQuaternion.clone().invert());
+
+          object.quaternion
+            .copy(parentWorldQuaternion.clone().invert())
+            .multiply(this.tempQuaternion);
+        }
+
+      }
+
+    });
+
+
+    // =========================================================
+    // Grab + tir de l'arme
+    // FIX : pendant que l'arme est tenue, le raycaster de la main
+    // (celui qui dessine le laser et le curseur) est reconfiguré
+    // pour partir EXACTEMENT du canon et pointer EXACTEMENT dans
+    // la même direction que la balle -> plus de décalage visuel.
+    // Remis à la normale (grab d'objets) au relâchement.
+    // =========================================================
+    AFRAME.registerComponent('gun-grab', {
+
+      schema: {
+        gripOffsetPosition: { type: 'vec3', default: { x: 0, y: -0.02, z: 0.05 } },
+        gripOffsetRotation: { type: 'vec3', default: { x: -30, y: 0, z: 0 } },
+
+        // Doit correspondre à la position locale de l'entité ".muzzle"
+        // à l'intérieur de #gun (cf. balisage HTML plus bas)
+        muzzleLocalOffset: { type: 'vec3', default: { x: 0, y: 0.02, z: -0.28 } },
+
+        bulletSpeed: { type: 'number', default: 20 },
+        bulletRadius: { type: 'number', default: 0.035 },
+        bulletColor: { type: 'color', default: '#FFD54A' },
+        bulletLifetime: { type: 'number', default: 4 },
+        fireCooldown: { type: 'number', default: 0.15 }
+      },
+
+      init: function () {
+
+        this.heldGun = null;
+
+        this.prevControllerPosition = new THREE.Vector3();
+        this.hasPrevPosition = false;
+        this.velocityHistory = [];
+
+        this.lastShotTime = 0;
+
+        this.el.addEventListener('gripdown', () => this.startGrabGun());
+        this.el.addEventListener('gripup', () => this.endGrabGun());
+        this.el.addEventListener('triggerdown', () => this.tryFire());
+      },
+
+      // Calcule, dans le repère LOCAL de la main, le point de sortie
+      // du canon et sa direction -> utilisé à la fois pour orienter
+      // le raycaster (visée) et pour positionner l'arme/tirer.
+      computeMuzzleLocalTransform: function () {
+
+        const offsetPos = new THREE.Vector3(
+          this.data.gripOffsetPosition.x,
+          this.data.gripOffsetPosition.y,
+          this.data.gripOffsetPosition.z
+        );
+
+        const offsetEuler = new THREE.Euler(
+          THREE.MathUtils.degToRad(this.data.gripOffsetRotation.x),
+          THREE.MathUtils.degToRad(this.data.gripOffsetRotation.y),
+          THREE.MathUtils.degToRad(this.data.gripOffsetRotation.z)
+        );
+        const offsetQuat = new THREE.Quaternion().setFromEuler(offsetEuler);
+
+        const muzzleLocal = new THREE.Vector3(
+          this.data.muzzleLocalOffset.x,
+          this.data.muzzleLocalOffset.y,
+          this.data.muzzleLocalOffset.z
+        );
+
+        const origin = muzzleLocal.clone()
+          .applyQuaternion(offsetQuat)
+          .add(offsetPos);
+
+        const direction = new THREE.Vector3(0, 0, -1)
+          .applyQuaternion(offsetQuat);
+
+        return { origin: origin, direction: direction, offsetQuat: offsetQuat, offsetPos: offsetPos };
+      },
+
+      startGrabGun: function () {
+
+        console.log('GRIP DOWN — tentative de saisie de l\'arme');
+
+        const laserGrab = this.el.components['laser-grab'];
+        if (laserGrab && laserGrab.grabbed) {
+          console.log('Main déjà occupée par un autre objet');
+          return;
+        }
+
+        if (this.heldGun) return;
+
+        const raycaster = this.el.components.raycaster;
+        if (!raycaster) return;
+
+        const intersections = raycaster.intersections;
+        if (!intersections || intersections.length === 0) {
+          console.log('Grip pressé mais aucune arme visée par le laser');
+          return;
+        }
+
+        let target = null;
+
+        for (let i = 0; i < intersections.length; i++) {
+          let candidate = intersections[i].object && intersections[i].object.el;
+
+          while (candidate && !candidate.classList.contains('gun-grabbable') && candidate.parentEl) {
+            candidate = candidate.parentEl;
+          }
+
+          if (candidate && candidate.classList.contains('gun-grabbable')) {
+            target = candidate;
+            break;
+          }
+        }
+
+        if (!target) {
+          console.log('Aucune arme grabbable visée');
+          return;
+        }
+
+        console.log('GUN GRAB:', target.id);
+
+        this.heldGun = target;
+
+        const body = target.components['physics-body'];
+        if (body) {
+          body.kinematic = true;
+          body.velocity.set(0, 0, 0);
+          body.angularVelocity.set(0, 0, 0);
+        }
+
+        this.velocityHistory = [];
+        this.hasPrevPosition = false;
+
+        // Le laser/curseur de cette main pointe désormais exactement
+        // comme le canon de l'arme -> ce que tu vois = ce que tu tires
+        const transform = this.computeMuzzleLocalTransform();
+        this.el.setAttribute('raycaster', 'origin', transform.origin);
+        this.el.setAttribute('raycaster', 'direction', transform.direction);
+
+        target.classList.add('grabbed');
+        target.emit('grab-start');
+      },
+
+      endGrabGun: function () {
+
+        if (!this.heldGun) return;
+
+        const object = this.heldGun;
+
+        const throwVelocity = new THREE.Vector3();
+        if (this.velocityHistory.length > 0) {
+          this.velocityHistory.forEach((v) => throwVelocity.add(v));
+          throwVelocity.divideScalar(this.velocityHistory.length);
+        }
+
+        const body = object.components['physics-body'];
+        if (body) {
+          body.kinematic = false;
+          body.velocity.copy(throwVelocity);
+          body.justThrownTimer = 0.15;
+          body.restTime = 0;
+        }
+
+        object.classList.remove('grabbed');
+        object.emit('grab-end');
+
+        this.heldGun = null;
+
+        // On remet le raycaster de cette main en mode "normal"
+        // (origine/direction par défaut) pour pouvoir de nouveau
+        // attraper d'autres objets normalement.
+        this.el.setAttribute('raycaster', 'origin', { x: 0, y: 0, z: 0 });
+        this.el.setAttribute('raycaster', 'direction', { x: 0, y: 0, z: -1 });
+      },
+
+      tryFire: function () {
+
+        if (!this.heldGun) return;
+
+        const now = performance.now();
+        if (now - this.lastShotTime < this.data.fireCooldown * 1000) return;
+        this.lastShotTime = now;
+
+        const muzzle = this.heldGun.querySelector('.muzzle');
+        if (!muzzle) {
+          console.warn('Pas de point de sortie (.muzzle) trouvé sur l\'arme');
+          return;
+        }
+
+        const muzzleWorldPos = new THREE.Vector3();
+        muzzle.object3D.getWorldPosition(muzzleWorldPos);
+
+        const gunWorldQuat = new THREE.Quaternion();
+        this.heldGun.object3D.getWorldQuaternion(gunWorldQuat);
+
+        const forward = new THREE.Vector3(0, 0, -1)
+          .applyQuaternion(gunWorldQuat)
+          .normalize();
+
+        this.spawnBullet(muzzleWorldPos, forward);
+
+        this.heldGun.emit('gun-fired');
+        console.log('FIRE from', this.el.id, '| direction:', forward);
+      },
+
+      spawnBullet: function (position, direction) {
+
+        const scene = this.el.sceneEl;
+        const bullet = document.createElement('a-entity');
+
+        bullet.setAttribute('geometry', {
+          primitive: 'sphere',
+          radius: this.data.bulletRadius
+        });
+
+        bullet.setAttribute('material', {
+          color: this.data.bulletColor,
+          shader: 'flat'
+        });
+
+        bullet.setAttribute('position', position);
+        bullet.classList.add('bullet');
+
+        // noRespawn: true -> une balle qui tombe du bord du sol ne
+        // revient JAMAIS, elle continue de tomber puis est nettoyée
+        // par son timeout.
+        bullet.setAttribute('physics-body', {
+          shape: 'sphere',
+          radius: this.data.bulletRadius,
+          restitution: 0.2,
+          friction: 0.3,
+          noRespawn: true
+        });
+
+        scene.appendChild(bullet);
+
+        bullet.addEventListener('loaded', () => {
+          const body = bullet.components['physics-body'];
+          if (body) {
+            body.velocity.copy(direction.clone().multiplyScalar(this.data.bulletSpeed));
+            body.justThrownTimer = 0.1;
+          }
+        });
+
+        setTimeout(() => {
+          if (bullet.parentNode) {
+            bullet.parentNode.removeChild(bullet);
+          }
+        }, this.data.bulletLifetime * 1000);
+      },
+
+      tick: function (time, delta) {
+
+        if (!this.heldGun) return;
+        if (!delta) return;
+
+        const dt = delta / 1000;
+
+        const controllerPos = new THREE.Vector3();
+        const controllerQuat = new THREE.Quaternion();
+        this.el.object3D.getWorldPosition(controllerPos);
+        this.el.object3D.getWorldQuaternion(controllerQuat);
+
+        if (this.hasPrevPosition && dt > 0) {
+          const instantVelocity = new THREE.Vector3()
+            .subVectors(controllerPos, this.prevControllerPosition)
+            .divideScalar(dt);
+
+          this.velocityHistory.push(instantVelocity);
+          if (this.velocityHistory.length > 5) this.velocityHistory.shift();
+        }
+        this.prevControllerPosition.copy(controllerPos);
+        this.hasPrevPosition = true;
+
+        const transform = this.computeMuzzleLocalTransform();
+
+        const worldPos = transform.offsetPos.clone()
+          .applyQuaternion(controllerQuat)
+          .add(controllerPos);
+
+        const worldQuat = controllerQuat.clone().multiply(transform.offsetQuat);
+
+        const object = this.heldGun.object3D;
+
+        if (object.parent) {
+
+          const parentPos = new THREE.Vector3();
+          const parentQuat = new THREE.Quaternion();
+          object.parent.getWorldPosition(parentPos);
+          object.parent.getWorldQuaternion(parentQuat);
+
+          object.position
+            .copy(worldPos)
+            .sub(parentPos)
+            .applyQuaternion(parentQuat.clone().invert());
+
+          object.quaternion
+            .copy(parentQuat.clone().invert())
+            .multiply(worldQuat);
+        }
+      }
+
+    });
+
+
+    AFRAME.registerComponent('controller-debug', {
+
+      init: function () {
+
+        this.el.addEventListener('triggerdown', () => {
+          console.log('DEBUG → TRIGGER DOWN', this.el.id);
+        });
+
+        this.el.addEventListener('triggerup', () => {
+          console.log('DEBUG → TRIGGER UP', this.el.id);
+        });
+
+        this.el.addEventListener('gripdown', () => {
+          console.log('DEBUG → GRIP DOWN', this.el.id);
+        });
+
+        this.el.addEventListener('gripup', () => {
+          console.log('DEBUG → GRIP UP', this.el.id);
+        });
+
+        this.el.addEventListener('thumbstickmoved', (event) => {
+          console.log('STICK', this.el.id, event.detail.x, event.detail.y);
+        });
+      }
+
+    });
+
+  </script>
+</body>
 </html>
