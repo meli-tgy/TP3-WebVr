@@ -2,22 +2,27 @@
 <head>
     <script src="https://aframe.io/releases/1.8.0/aframe.min.js"></script>
     <script src="https://unpkg.com/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/n5ro/aframe-physics-system@v4.0.1/dist/aframe-physics-system.min.js"></script>
+<script src="https://unpkg.com/super-hands@3.0.0/dist/super-hands.min.js"></script>
   </head>
   <body>
-    <a-scene shadow="type: pcfsoft">
+    <a-scene shadow="type: pcfsoft" physics="debug: false; gravity: -9.81">
 
       <a-entity light="type: directional; color: #FFF; intensity: 3; castShadow: true" position="-1 3 1"></a-entity>
       <a-entity light="type: ambient; color: #BBB; intensity: 0.6"></a-entity>
 
-      <a-box position="0 0.5 -1" rotation="0 45 0" color="#4CC3D9" shadow="cast: true; receive: true"></a-box>
-      <a-sphere position="2 1.25 -3" radius="1.25" color="#EF2D5E" shadow="cast: true; receive: true"></a-sphere>
+      <a-box class="grabbable" position="0 0.5 -1" rotation="0 45 0" color="#4CC3D9" shadow="cast: true; receive: true"
+      dynamic-body="shape: box; mass:1" grabbable="usePhysics: transform"></a-box>
+      <a-sphere class="grabbable" position="2 1.25 -3" radius="1.25" color="#EF2D5E" shadow="cast: true; receive: true"
+      dynamic-body="shape : sphere; mass:1"
+      grabbable="usePhysics: transform"></a-sphere>
       <a-sky color="#ECECEC"></a-sky>
-      <a-plane position="0 0 0" rotation="-90 0 0" width="10" height="10" color="#7BC8A4" shadow="receive: true"></a-plane>
+      <a-plane position="0 0 0" rotation="-90 0 0" width="10" height="10" color="#7BC8A4" shadow="receive: true" static-body></a-plane>
 
-      <a-entity id="rig">
+      <a-entity id="rig" movement-controls="controls: checkpoint, nav, trackpad, touch, keyboard, gamepad">
         <a-entity id="camera" camera position="0 1.6 0" look-controls></a-entity>
-        <a-entity id="leftHand" oculus-touch-controls="hand: left" super-hands sphere-collider="objects: .grabbable" move-controls></a-entity>
-        <a-entity id="rightHand" oculus-touch-controls="hand: right" turn-controls></a-entity>
+        <a-entity id="leftHand" oculus-touch-controls="hand: left" super-hands collision-filter sphere-collider="objects: .grabbable"></a-entity>
+        <a-entity id="rightHand" oculus-touch-controls="hand: right" turn-controls super-hands sphere-collider="objects: .grabbable"></a-entity>
       </a-entity>
 
     </a-scene>
@@ -41,38 +46,6 @@
         rig.setAttribute('rotation', rotation);
       }
     });
-
-    AFRAME.registerComponent('move-controls', {
-  schema: { speed: { default: 2 } }, // mètres/seconde
-  init: function () {
-    this.rig = this.el.closest('#rig') || document.querySelector('#rig');
-    this.camera = document.querySelector('#camera');
-    this.axisX = 0;
-    this.axisY = 0;
-    this.el.addEventListener('axismove', (evt) => {
-      console.log('left axis:', evt.detail.axis); // debug : garde le temps de vérifier les index
-      this.axisX = evt.detail.axis[2] !== undefined ? evt.detail.axis[2] : evt.detail.axis[0];
-      this.axisY = evt.detail.axis[3] !== undefined ? evt.detail.axis[3] : evt.detail.axis[1];
-    });
-  },
-  tick: function (time, delta) {
-    if (Math.abs(this.axisX) < 0.15 && Math.abs(this.axisY) < 0.15) return; // deadzone
-
-    const dt = delta / 1000;
-    const camRotation = this.camera.object3D.rotation;
-
-    const forward = new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(0, camRotation.y, 0));
-    const right = new THREE.Vector3(1, 0, 0).applyEuler(new THREE.Euler(0, camRotation.y, 0));
-
-    const move = new THREE.Vector3();
-    move.addScaledVector(forward, -this.axisY * this.data.speed * dt); 
-    move.addScaledVector(right, this.axisX * this.data.speed * dt);    
-
-    const pos = this.rig.object3D.position;
-    pos.x += move.x;
-    pos.z += move.z;
-  }
-});
     </script>
   </body>
 </html>
