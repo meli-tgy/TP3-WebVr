@@ -7,7 +7,6 @@
 
   <title>VR - Grab, Movement & Weapon</title>
 
-  <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
 
 
@@ -22,12 +21,7 @@
   physics-world="gravity: -9.81; floorHalfExtent: 10; killY: -20"
 >
 
-  <!--
-  <a-assets>
-    <a-asset-item id="gunModel" src="models/gun.glb"></a-asset-item>
-  </a-assets>
-  -->
-
+  
   <a-entity light="type: ambient; intensity: 0.7"></a-entity>
   <a-entity light="type: directional; intensity: 1; castShadow: true" position="-2 5 3"></a-entity>
 
@@ -36,7 +30,7 @@
     rotation="-90 0 0"
     width="10"
     height="10"
-    color="#EF2D5E"
+    color="#7BC8A4"
     shadow="receive: true">
   </a-plane>
 
@@ -129,9 +123,7 @@
   <a-sky color="#ECECEC"></a-sky>
 </a-scene>
   <script>
-    // =========================================================
-    // SYSTEME PHYSIQUE MAISON
-    // =========================================================
+
     AFRAME.registerSystem('physics-world', {
 
       schema: {
@@ -330,10 +322,7 @@
           }
         }
 
-        // Sécurité "kill plane" : uniquement pour les objets qui ont
-        // un vrai sens à "revenir" (box/sphère/cylindre/arme). Les
-        // balles (noRespawn: true) ne reviennent jamais, elles
-        // continuent de tomber puis sont supprimées par leur timeout.
+      
         for (let i = 0; i < this.bodies.length; i++) {
           const body = this.bodies[i];
           if (body.kinematic) continue;
@@ -366,8 +355,6 @@
         restitution: { type: 'number', default: 0.15 },
         friction: { type: 'number', default: 0.35 },
 
-        // Les balles n'ont pas besoin (et ne doivent pas) revenir à
-        // un "point de spawn" après être tombées du bord du sol.
         noRespawn: { type: 'boolean', default: false }
       },
 
@@ -487,9 +474,6 @@
     });
 
 
-    // =========================================================
-    // Mouvement avec le joystick gauche
-    // =========================================================
     AFRAME.registerComponent('left-thumbstick-move', {
 
       schema: {
@@ -537,9 +521,7 @@
     });
 
 
-    // =========================================================
-    // Rotation avec le joystick droit
-    // =========================================================
+  
     AFRAME.registerComponent('joystick-turn', {
 
       schema: {
@@ -565,9 +547,6 @@
     });
 
 
-    // =========================================================
-    // Curseur visuel pour le laser
-    // =========================================================
     AFRAME.registerComponent('laser-cursor', {
 
       schema: {
@@ -634,9 +613,6 @@
     });
 
 
-    // =========================================================
-    // Grab générique (box/sphère/cylindre) avec le laser + trigger
-    // =========================================================
     AFRAME.registerComponent('laser-grab', {
 
       schema: {
@@ -859,22 +835,12 @@
     });
 
 
-    // =========================================================
-    // Grab + tir de l'arme
-    // FIX : pendant que l'arme est tenue, le raycaster de la main
-    // (celui qui dessine le laser et le curseur) est reconfiguré
-    // pour partir EXACTEMENT du canon et pointer EXACTEMENT dans
-    // la même direction que la balle -> plus de décalage visuel.
-    // Remis à la normale (grab d'objets) au relâchement.
-    // =========================================================
     AFRAME.registerComponent('gun-grab', {
 
       schema: {
         gripOffsetPosition: { type: 'vec3', default: { x: 0, y: -0.02, z: 0.05 } },
         gripOffsetRotation: { type: 'vec3', default: { x: -30, y: 0, z: 0 } },
 
-        // Doit correspondre à la position locale de l'entité ".muzzle"
-        // à l'intérieur de #gun (cf. balisage HTML plus bas)
         muzzleLocalOffset: { type: 'vec3', default: { x: 0, y: 0.02, z: -0.28 } },
 
         bulletSpeed: { type: 'number', default: 20 },
@@ -899,9 +865,6 @@
         this.el.addEventListener('triggerdown', () => this.tryFire());
       },
 
-      // Calcule, dans le repère LOCAL de la main, le point de sortie
-      // du canon et sa direction -> utilisé à la fois pour orienter
-      // le raycaster (visée) et pour positionner l'arme/tirer.
       computeMuzzleLocalTransform: function () {
 
         const offsetPos = new THREE.Vector3(
@@ -1023,9 +986,6 @@
 
         this.heldGun = null;
 
-        // On remet le raycaster de cette main en mode "normal"
-        // (origine/direction par défaut) pour pouvoir de nouveau
-        // attraper d'autres objets normalement.
         this.el.setAttribute('raycaster', 'origin', { x: 0, y: 0, z: 0 });
         this.el.setAttribute('raycaster', 'direction', { x: 0, y: 0, z: -1 });
       },
@@ -1078,9 +1038,6 @@
         bullet.setAttribute('position', position);
         bullet.classList.add('bullet');
 
-        // noRespawn: true -> une balle qui tombe du bord du sol ne
-        // revient JAMAIS, elle continue de tomber puis est nettoyée
-        // par son timeout.
         bullet.setAttribute('physics-body', {
           shape: 'sphere',
           radius: this.data.bulletRadius,
