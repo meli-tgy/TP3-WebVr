@@ -116,34 +116,39 @@
     });
   },
   tick: function (time, delta) {
-    
-    if (!this.camera) {
-      this.camera = this.el.sceneEl.camera && this.el.sceneEl.camera.el;
-      if (!this.camera) return;
+    try {
+      if (!this.rig) return;
+
+      if (!this.camera) {
+        this.camera = this.el.sceneEl.camera && this.el.sceneEl.camera.el;
+        if (!this.camera) return;
+      }
+
+      if (Math.abs(this.axisX) < 0.15 && Math.abs(this.axisY) < 0.15) return;
+
+      const dt = delta / 1000;
+
+      const camWorldQuat = new THREE.Quaternion();
+      this.camera.object3D.getWorldQuaternion(camWorldQuat);
+
+      const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camWorldQuat);
+      forward.y = 0;
+      if (forward.lengthSq() > 0.0001) forward.normalize();
+
+      const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camWorldQuat);
+      right.y = 0;
+      if (right.lengthSq() > 0.0001) right.normalize();
+
+      const move = new THREE.Vector3();
+      move.addScaledVector(forward, -this.axisY * this.data.speed * dt);
+      move.addScaledVector(right, this.axisX * this.data.speed * dt);
+
+      const pos = this.rig.object3D.position;
+      pos.x += move.x;
+      pos.z += move.z;
+    } catch (e) {
+      console.warn('move-controls tick error:', e);
     }
-
-    if (Math.abs(this.axisX) < 0.15 && Math.abs(this.axisY) < 0.15) return; // deadzone
-
-    const dt = delta / 1000;
-
-    const camWorldQuat = new THREE.Quaternion();
-    this.camera.object3D.getWorldQuaternion(camWorldQuat);
-
-    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camWorldQuat);
-    forward.y = 0;
-    forward.normalize();
-
-    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camWorldQuat);
-    right.y = 0;
-    right.normalize();
-
-    const move = new THREE.Vector3();
-    move.addScaledVector(forward, -this.axisY * this.data.speed * dt);
-    move.addScaledVector(right, this.axisX * this.data.speed * dt);
-
-    const pos = this.rig.object3D.position;
-    pos.x += move.x;
-    pos.z += move.z;
   }
 });
     </script>
